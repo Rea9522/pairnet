@@ -4,6 +4,7 @@ from mmdet.core import AssignResult, BaseAssigner, bbox_cxcywh_to_xyxy
 from mmdet.core.bbox.builder import BBOX_ASSIGNERS
 from mmdet.core.bbox.match_costs import build_match_cost
 from scipy.optimize import linear_sum_assignment
+import torch.nn.functional as F
 
 sorted_dict = {'on': 712409, 'has': 277936, 'in': 251756, 'of': 146339, 'wearing': 136099, 'near': 96589, 'with': 66425, 'above': 47341, 'holding': 42722, 'behind': 41356, 'under': 22596, 'sitting on': 18643, 'wears': 15457, 'standing on': 14185, 'in front of': 13715, 'attached to': 10190, 'at': 9903, 'hanging from': 9894, 'over': 9317, 'for': 9145, 'riding': 8856, 'carrying': 5213, 'eating': 4688, 'walking on': 4613, 'playing': 3810, 'covering': 3806, 'laying on': 3739, 'along': 3624, 'watching': 3490, 'and': 3477, 'between': 3411, 'belonging to': 3288, 'painted on': 3095, 'against': 3092, 'looking at': 3083, 'from': 2945, 'parked on': 2721, 'to': 2517, 'made of': 2380, 'covered in': 2312, 'mounted on': 2253, 'says': 2241, 'part of': 2065, 'across': 1996, 'flying in': 1973, 'using': 1925, 'on back of': 1914, 'lying on': 1869, 'growing on': 1853, 'walking in': 1740}
 
@@ -465,8 +466,9 @@ class SpeaQMatcher(BaseAssigner):
         gt_rel_labels,
         gt_sub_masks,
         gt_obj_masks,
-        pred_sub_mask,
-        pred_obj_mask,
+        all_mask_pred,  # 接收完整的mask预测
+        sub_pos,        # 接收subject位置索引
+        obj_pos,        # 接收object位置索引
         img_meta,
         gt_bboxes_ignore=None,
     ):
@@ -500,26 +502,56 @@ class SpeaQMatcher(BaseAssigner):
             ), AssignResult(num_gts, assigned_gt_inds, None, labels=assigned_o_labels)
 
         # 2. compute the weighted costs
-        # -object confidence
+        # object confidence
         sub_id_cost = self.sub_id_cost(sub_score, gt_sub_cls)
         obj_id_cost = self.obj_id_cost(obj_score, gt_obj_cls)
         r_cls_cost = self.r_cls_cost(rel_cls_score, gt_rel_labels)  # [num_pred, num_gt]
         # print("r cls cost shape:", r_cls_cost.shape)
 
-        # DICE mask similarity
         def dice_similarity(pred, target):
+            """计算DICE相似度
+            Args:
+                pred: [num_pred, H, W] 预测mask
+                target: [num_gt, H, W] GT mask
+            Returns:
+                dice: [num_pred, num_gt] DICE相似度矩阵
+            """
+            # 确保pred和target的尺寸一致
+            if pred.shape[-2:] != target.shape[-2:]:
+                # 将target resize到pred的尺寸
+                target = F.interpolate(
+                    target.unsqueeze(1).float(),
+                    size=pred.shape[-2:],
+                    mode='bilinear',
+                    align_corners=False
+                ).squeeze(1)
+
             pred_flat = pred.flatten(1)   # [num_pred, H*W]
             target_flat = target.flatten(1)  # [num_gt, H*W]
-            inter = (pred_flat[:, None] * target_flat[None]).sum(-1)
-            union = pred_flat[:, None].sum(-1) + target_flat[None].sum(-1)
+
+            # 使用广播机制计算交集
+            pred_flat = pred_flat.unsqueeze(1)  # [num_pred, 1, H*W]
+            target_flat = target_flat.unsqueeze(0)  # [1, num_gt, H*W]
+
+            # 计算交集
+            inter = (pred_flat * target_flat).sum(-1)  # [num_pred, num_gt]
+
+            # 计算并集
+            pred_sum = pred_flat.sum(-1)  # [num_pred, 1]
+            target_sum = target_flat.sum(-1)  # [1, num_gt]
+            union = pred_sum + target_sum  # [num_pred, num_gt]
+
             dice = (2 * inter + 1e-6) / (union + 1e-6)
             return dice
 
         # 计算 mask dice 相似度
-        print("pred_sub_mask shape:", pred_sub_mask.shape)
-        print("gt_sub_masks shape:", gt_sub_masks.shape)
+        pred_sub_mask = all_mask_pred[sub_pos]  # [num_rel_query, H, W]
+        pred_obj_mask = all_mask_pred[obj_pos]  # [num_rel_query, H, W]
+        # print("pred_sub_mask shape:", pred_sub_mask.shape)
+        # print("gt_sub_masks shape:", gt_sub_masks.shape)
+        
         sub_dice = dice_similarity(pred_sub_mask.sigmoid(), gt_sub_masks.float())  # [num_pred, num_gt]
-        print("sub_dice shape:", sub_dice.shape)
+        # print("sub_dice shape:", sub_dice.shape)
         obj_dice = dice_similarity(pred_obj_mask.sigmoid(), gt_obj_masks.float())
 
         # 质量分数
@@ -536,9 +568,9 @@ class SpeaQMatcher(BaseAssigner):
         # cost = cost - 3.0 * quality_score
 
         # 可选：加入预测置信度增强质量评估
-        print("quality score shape:", quality_score.shape)
-        print("r_cls_cost shape:", r_cls_cost.shape)
-        if hasattr(self, 'use_pred_confidence') and self.use_pred_confidence:
+        # print("quality score shape:", quality_score.shape)
+        # print("r_cls_cost shape:", r_cls_cost.shape)
+        if self.use_pred_confidence:
             quality_score = quality_score + self.confidence_weight * r_cls_cost
 
         # 3. do Hungarian matching on CPU using linear_sum_assignment
@@ -561,18 +593,21 @@ class SpeaQMatcher(BaseAssigner):
 
         for gt_idx in range(num_gts):
             gt_rel_label = gt_rel_labels[gt_idx].item()
-            group_id = self.group_tensor[gt_rel_label].item()
+            # 确保group_id是整数
+            group_id = int(self.group_tensor[gt_rel_label])
             
             # 找到属于该组的查询索引
-            group_query_start = sum(self.n_queries_per_group[:group_id]).item()
-            group_query_end = group_query_start + self.n_queries_per_group[group_id].item()
+            # 确保查询范围索引是整数
+            group_query_start = int(sum(self.n_queries_per_group[:group_id]))
+            group_query_end = int(group_query_start + self.n_queries_per_group[group_id])
             
             # 对于不在对应组内的查询，设置极大惩罚
             group_mask[:group_query_start, gt_idx] = 1e6
             group_mask[group_query_end:, gt_idx] = 1e6
 
         # 4. 计算总成本（越小越好）
-        total_cost = sub_id_cost + obj_id_cost + r_cls_cost - self.quality_weight * quality_score + group_mask
+        total_cost = (sub_id_cost + obj_id_cost + r_cls_cost 
+                     - self.quality_weight * quality_score + group_mask)
 
         # 对每个 pred 选最高质量匹配的 gt
         # for pred_idx, gts in enumerate(groupwise_matches):
@@ -584,17 +619,21 @@ class SpeaQMatcher(BaseAssigner):
         # 5. SpeaQ风格的一对多分配
         # 为每个GT动态确定要分配的查询数量
         matched_pairs = []
-        assigned_gts_expanded = []
         
         for gt_idx in range(num_gts):
             gt_rel_label = gt_rel_labels[gt_idx].item()
-            group_id = self.group_tensor[gt_rel_label].item()
+            # 确保group_id是整数
+            group_id = int(self.group_tensor[gt_rel_label])
             
-            # 确定该组可用的查询范围
-            group_query_start = sum(self.n_queries_per_group[:group_id]).item()
-            group_query_end = group_query_start + self.n_queries_per_group[group_id].item()
-            group_queries = torch.arange(group_query_start, group_query_end, device=device)
+            # 确定该组可用的查询范围 - 确保是整数类型
+            group_query_start = int(sum(self.n_queries_per_group[:group_id]))
+            group_query_end = int(group_query_start + self.n_queries_per_group[group_id])
+            group_queries = torch.arange(group_query_start, group_query_end, 
+                                       device=device, dtype=torch.long)
             
+            if len(group_queries) == 0:
+                continue
+
             # 基于质量分数选择top-k个查询
             gt_quality_scores = quality_score[group_queries, gt_idx]
             
@@ -608,14 +647,12 @@ class SpeaQMatcher(BaseAssigner):
                 dynamic_k = min(self.k, len(group_queries))
             
             # 选择top-k个最高质量的查询
-            if len(group_queries) > 0:
-                topk_values, topk_indices = torch.topk(gt_quality_scores, dynamic_k, largest=True)
-                selected_queries = group_queries[topk_indices]
+            topk_values, topk_indices = torch.topk(gt_quality_scores, dynamic_k, largest=True)
+            selected_queries = group_queries[topk_indices]
                 
-                # 记录匹配对
-                for query_idx in selected_queries:
-                    matched_pairs.append((query_idx.item(), gt_idx))
-                    assigned_gts_expanded.append(gt_idx)
+            # 记录匹配对
+            for query_idx in selected_queries:
+                matched_pairs.append((query_idx.item(), gt_idx))
 
 
         # matched_row_inds, matched_col_inds = linear_sum_assignment(cost)
@@ -634,11 +671,11 @@ class SpeaQMatcher(BaseAssigner):
         
         if matched_pairs:
             matched_query_inds, matched_gt_inds = zip(*matched_pairs)
-            matched_query_inds = torch.tensor(matched_query_inds, device=device)
-            matched_gt_inds = torch.tensor(matched_gt_inds, device=device)
+            matched_query_inds = torch.tensor(matched_query_inds, device=device, dtype=torch.long)
+            matched_gt_inds = torch.tensor(matched_gt_inds, device=device, dtype=torch.long)
             
             # 分配前景
             assigned_gt_inds[matched_query_inds] = matched_gt_inds + 1
             assigned_s_labels[matched_query_inds] = gt_sub_cls[matched_gt_inds]
-            # assigned_o_labels[matched_query_inds] = gt_obj_cls[matched_gt_inds]
+
         return AssignResult(num_gts, assigned_gt_inds, None, labels=assigned_s_labels)
