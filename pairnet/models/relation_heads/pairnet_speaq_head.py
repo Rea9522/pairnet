@@ -154,6 +154,11 @@ class CrossHead3(AnchorFreeHead):
 
         self._init_layers()
 
+        # 保存位置信息到模块中，供_get_target_single使用
+        self._current_sub_pos = None
+        self._current_obj_pos = None
+        self._current_mask_pred = None
+
     def _init_layers(self):
         """Initialize layers of the transformer head."""
 
@@ -338,6 +343,21 @@ class CrossHead3(AnchorFreeHead):
             updated_importance_idx, self.num_obj_query, rounding_mode="trunc"
         )
         obj_pos = torch.remainder(updated_importance_idx, self.num_obj_query)
+
+        # 在计算sub_pos和obj_pos后保存
+        _, updated_importance_idx = torch.topk(
+            importance.flatten(-2, -1), k=self.num_rel_query
+        )
+        sub_pos = torch.div(
+            updated_importance_idx, self.num_obj_query, rounding_mode="trunc"
+        ).long()  # 确保是long类型
+        obj_pos = torch.remainder(updated_importance_idx, self.num_obj_query).long()
+
+        # 保存当前batch的位置信息和mask预测
+        self._current_sub_pos = sub_pos
+        self._current_obj_pos = obj_pos
+        self._current_mask_pred = mask_pred
+        # 其余代码保持不变...
 
         obj_query_feat = torch.gather(
             query_feat,
@@ -589,7 +609,7 @@ class CrossHead3(AnchorFreeHead):
             gt_object_id_list,
             gt_importance_list,
         ) = multi_apply(
-            self._get_target_single,
+            self._get_target_single_with_batch_idx,  # 使用新的包装函数
             subject_scores_list,
             object_scores_list,
             cls_scores_list,
@@ -600,6 +620,7 @@ class CrossHead3(AnchorFreeHead):
             gt_masks_list,
             img_metas,
             gt_bboxes_ignore_list,
+            list(range(len(r_cls_scores_list))),  # 传递batch索引
         )
 
         return (
@@ -609,6 +630,10 @@ class CrossHead3(AnchorFreeHead):
             gt_object_id_list,
             gt_importance_list,
         )
+
+    def _get_target_single_with_batch_idx(self, *args):
+        """包装函数，添加batch_idx参数"""
+        return self._get_target_single(*args[:-1], batch_idx=args[-1])
 
     def _get_target_single(
         self,
@@ -622,6 +647,7 @@ class CrossHead3(AnchorFreeHead):
         gt_masks,
         img_metas,
         gt_bboxes_ignore=None,
+        batch_idx=0,  # 添加batch索引参数
     ):
         ############################### obj seg ####################################
         # sample points
@@ -656,10 +682,9 @@ class CrossHead3(AnchorFreeHead):
         gt_sub_pos = gt_label_assigned_query[gt_rels[0]]
         gt_obj_pos = gt_label_assigned_query[gt_rels[1]]
 
+        # 获取GT的mask
         gt_sub_masks = gt_masks[gt_rels[0]]
         gt_obj_masks = gt_masks[gt_rels[1]]
-        pred_sub_mask = mask_pred[gt_sub_pos] 
-        pred_obj_mask = mask_pred[gt_obj_pos]  
 
         gt_importance = torch.zeros(
             (self.num_obj_query, self.num_obj_query), device=gt_labels.device
@@ -670,19 +695,10 @@ class CrossHead3(AnchorFreeHead):
         # print(">>>>pred_sub_mask shape:", pred_sub_mask.shape)  #  [6, 150, 120]
         # print(">>>>gt_sub_masks shape:", gt_sub_masks.shape)    #  [6, 300, 400]
 
-        # 确保 gt_masks 是 [N, H, W] -> [N, 1, H, W]
-        gt_sub_masks = F.interpolate(
-            gt_sub_masks.unsqueeze(1).float(),              # [6, 1, 300, 400]
-            size=pred_sub_mask.shape[-2:],                 # (150, 200)
-            mode='bilinear',                               # 双线性插值（对 mask 比较平滑）
-            align_corners=False
-        ).squeeze(1)                                        # [6, 150, 200]
-        gt_obj_masks = F.interpolate(
-            gt_obj_masks.unsqueeze(1).float(),              # [6, 1, 300, 400]
-            size=pred_obj_mask.shape[-2:],                 # (150, 200)
-            mode='bilinear',                               # 双线性插值（对 mask 比较平滑）
-            align_corners=False
-        ).squeeze(1)                                        # [6, 150, 200]
+        # 从保存的位置信息中获取当前batch的sub_pos和obj_pos
+        current_sub_pos = self._current_sub_pos[batch_idx].long()
+        current_obj_pos = self._current_obj_pos[batch_idx].long()
+        current_mask_pred = self._current_mask_pred[batch_idx]
 
         triplet_assign_result = self.id_assigner.assign(
             subject_score,
@@ -693,8 +709,9 @@ class CrossHead3(AnchorFreeHead):
             gt_rel_labels,
             gt_sub_masks,
             gt_obj_masks,
-            pred_sub_mask,
-            pred_obj_mask,
+            current_mask_pred,     # 传递当前batch的mask预测
+            current_sub_pos,       # 传递当前batch的subject位置索引  
+            current_obj_pos,       # 传递当前batch的object位置索引
             img_metas,
             gt_bboxes_ignore,
         )
