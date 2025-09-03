@@ -1,0 +1,2382 @@
+2025-09-02 17:09:06,007 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.9.23 (main, Jun  5 2025, 13:40:20) [GCC 11.2.0]
+CUDA available: True
+GPU 0: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda-11.3
+NVCC: Cuda compilation tools, release 11.3, V11.3.58
+GCC: gcc (Ubuntu 11.4.0-2ubuntu1~20.04) 11.4.0
+PyTorch: 1.13.1
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2023.1-Product Build 20230303 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.7
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.5
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.7, CUDNN_VERSION=8.5.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.14.1
+OpenCV: 4.11.0
+MMCV: 1.7.0
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 11.7
+MMDetection: 2.25.1+
+------------------------------------------------------------
+
+2025-09-02 17:09:09,528 - mmdet - INFO - Distributed training: False
+2025-09-02 17:09:12,914 - mmdet - INFO - Config:
+dataset_type = 'PanopticSceneGraphDataset'
+ann_file = './data/psg/psg.json'
+coco_root = './data/coco'
+seg_root = './data/coco/annotations'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='LoadPanopticSceneGraphAnnotations',
+        with_bbox=True,
+        with_rel=True,
+        with_mask=True,
+        with_seg=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='AutoAugment',
+        policies=[[{
+            'type':
+            'Resize',
+            'img_scale': [(480, 800), (512, 800), (544, 800), (576, 800),
+                          (608, 800), (640, 800), (672, 800), (704, 800),
+                          (736, 800), (768, 800), (800, 800)],
+            'multiscale_mode':
+            'value',
+            'keep_ratio':
+            True
+        }],
+                  [{
+                      'type': 'Resize',
+                      'img_scale': [(400, 800), (500, 800), (600, 800)],
+                      'multiscale_mode': 'value',
+                      'keep_ratio': True
+                  }, {
+                      'type': 'RelRandomCrop',
+                      'crop_type': 'absolute_range',
+                      'crop_size': (384, 600),
+                      'allow_negative_crop': False
+                  }, {
+                      'type':
+                      'Resize',
+                      'img_scale': [(480, 800), (512, 800), (544, 800),
+                                    (576, 800), (608, 800), (640, 800),
+                                    (672, 800), (704, 800), (736, 800),
+                                    (768, 800), (800, 800)],
+                      'multiscale_mode':
+                      'value',
+                      'override':
+                      True,
+                      'keep_ratio':
+                      True
+                  }]]),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=1),
+    dict(type='RelsFormatBundle'),
+    dict(
+        type='Collect',
+        keys=['img', 'gt_bboxes', 'gt_labels', 'gt_rels', 'gt_masks'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadSceneGraphAnnotations', with_bbox=True, with_rel=True),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(640, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=1),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='ToTensor', keys=['gt_bboxes', 'gt_labels']),
+            dict(
+                type='ToDataContainer',
+                fields=({
+                    'key': 'gt_bboxes'
+                }, {
+                    'key': 'gt_labels'
+                })),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=1,
+    workers_per_gpu=1,
+    train=dict(
+        type='PanopticSceneGraphDataset',
+        ann_file='./data/psg/psg.json',
+        img_prefix='./data/coco',
+        seg_prefix='./data/coco/annotations',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='LoadPanopticSceneGraphAnnotations',
+                with_bbox=True,
+                with_rel=True,
+                with_mask=True,
+                with_seg=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='AutoAugment',
+                policies=[[{
+                    'type':
+                    'Resize',
+                    'img_scale': [
+                        (480, 800), (512, 800), (544, 800), (576, 800),
+                        (608, 800), (640, 800), (672, 800), (704, 800),
+                        (736, 800), (768, 800), (800, 800)
+                    ],
+                    'multiscale_mode':
+                    'value',
+                    'keep_ratio':
+                    True
+                }],
+                          [{
+                              'type': 'Resize',
+                              'img_scale': [(400, 800), (500, 800),
+                                            (600, 800)],
+                              'multiscale_mode': 'value',
+                              'keep_ratio': True
+                          }, {
+                              'type': 'RelRandomCrop',
+                              'crop_type': 'absolute_range',
+                              'crop_size': (384, 600),
+                              'allow_negative_crop': False
+                          }, {
+                              'type':
+                              'Resize',
+                              'img_scale': [(480, 800), (512, 800), (544, 800),
+                                            (576, 800), (608, 800), (640, 800),
+                                            (672, 800), (704, 800), (736, 800),
+                                            (768, 800), (800, 800)],
+                              'multiscale_mode':
+                              'value',
+                              'override':
+                              True,
+                              'keep_ratio':
+                              True
+                          }]]),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=1),
+            dict(type='RelsFormatBundle'),
+            dict(
+                type='Collect',
+                keys=['img', 'gt_bboxes', 'gt_labels', 'gt_rels', 'gt_masks'])
+        ],
+        split='train',
+        all_bboxes=True),
+    val=dict(
+        type='PanopticSceneGraphDataset',
+        ann_file='./data/psg/psg.json',
+        img_prefix='./data/coco',
+        seg_prefix='./data/coco/annotations',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='LoadSceneGraphAnnotations',
+                with_bbox=True,
+                with_rel=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(640, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=1),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='ToTensor', keys=['gt_bboxes', 'gt_labels']),
+                    dict(
+                        type='ToDataContainer',
+                        fields=({
+                            'key': 'gt_bboxes'
+                        }, {
+                            'key': 'gt_labels'
+                        })),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        split='test',
+        all_bboxes=True),
+    test=dict(
+        type='PanopticSceneGraphDataset',
+        ann_file='./data/psg/psg.json',
+        img_prefix='./data/coco',
+        seg_prefix='./data/coco/annotations',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='LoadSceneGraphAnnotations',
+                with_bbox=True,
+                with_rel=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(640, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=1),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='ToTensor', keys=['gt_bboxes', 'gt_labels']),
+                    dict(
+                        type='ToDataContainer',
+                        fields=({
+                            'key': 'gt_bboxes'
+                        }, {
+                            'key': 'gt_labels'
+                        })),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        split='test',
+        all_bboxes=True),
+    pin_memory=False,
+    persistent_workers=False,
+    prefetch_factor=1)
+checkpoint_config = dict(interval=1, max_keep_ckpts=15)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = 'pretrain/maskrcnn_resnet50_fpn_coco-bf2d0c1e.pth'
+resume_from = None
+workflow = [('train', 1), ('val', 1)]
+num_object_classes = 133
+num_relation_classes = 56
+find_unused_parameters = True
+model = dict(
+    type='PSGTr',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=False),
+        norm_eval=True,
+        style='pytorch',
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+    bbox_head=dict(
+        type='CrossHead3',
+        num_classes=133,
+        num_relations=56,
+        num_obj_query=100,
+        num_rel_query=100,
+        mapper='conv_tiny',
+        in_channels=[256, 512, 1024, 2048],
+        feat_channels=256,
+        out_channels=256,
+        num_transformer_feat_level=3,
+        embed_dims=256,
+        enforce_decoder_input_project=False,
+        pixel_decoder=dict(
+            type='MSDeformAttnPixelDecoder',
+            num_outs=3,
+            norm_cfg=dict(type='GN', num_groups=32),
+            act_cfg=dict(type='ReLU'),
+            encoder=dict(
+                type='DetrTransformerEncoder',
+                num_layers=6,
+                transformerlayers=dict(
+                    type='BaseTransformerLayer',
+                    attn_cfgs=dict(
+                        type='MultiScaleDeformableAttention',
+                        embed_dims=256,
+                        num_heads=8,
+                        num_levels=3,
+                        num_points=4,
+                        im2col_step=64,
+                        dropout=0.0,
+                        batch_first=False,
+                        norm_cfg=None,
+                        init_cfg=None),
+                    ffn_cfgs=dict(
+                        type='FFN',
+                        embed_dims=256,
+                        feedforward_channels=1024,
+                        num_fcs=2,
+                        ffn_drop=0.0,
+                        act_cfg=dict(type='ReLU', inplace=True)),
+                    operation_order=('self_attn', 'norm', 'ffn', 'norm')),
+                init_cfg=None),
+            positional_encoding=dict(
+                type='SinePositionalEncoding', num_feats=128, normalize=True),
+            init_cfg=None),
+        transformer_decoder=dict(
+            type='DetrTransformerDecoder',
+            return_intermediate=False,
+            num_layers=9,
+            transformerlayers=dict(
+                type='BaseTransformerLayer',
+                attn_cfgs=dict(
+                    type='MultiheadAttention',
+                    embed_dims=256,
+                    num_heads=8,
+                    attn_drop=0.0,
+                    proj_drop=0.0,
+                    dropout_layer=None,
+                    batch_first=False),
+                ffn_cfgs=dict(
+                    embed_dims=256,
+                    feedforward_channels=2048,
+                    num_fcs=2,
+                    act_cfg=dict(type='ReLU', inplace=True),
+                    ffn_drop=0.0,
+                    dropout_layer=None,
+                    add_identity=True),
+                operation_order=('cross_attn', 'norm', 'self_attn', 'norm',
+                                 'ffn', 'norm'))),
+        relation_decoder=dict(
+            type='DetrTransformerDecoder',
+            return_intermediate=True,
+            num_layers=6,
+            transformerlayers=dict(
+                type='BaseTransformerLayer',
+                attn_cfgs=dict(
+                    type='MultiheadAttention',
+                    embed_dims=256,
+                    num_heads=8,
+                    attn_drop=0.0,
+                    proj_drop=0.0,
+                    dropout_layer=None,
+                    batch_first=False),
+                ffn_cfgs=dict(
+                    embed_dims=256,
+                    feedforward_channels=2048,
+                    num_fcs=2,
+                    act_cfg=dict(type='ReLU', inplace=True),
+                    ffn_drop=0.1,
+                    dropout_layer=None,
+                    add_identity=True),
+                operation_order=('cross_attn', 'norm', 'self_attn', 'norm',
+                                 'ffn', 'norm'))),
+        positional_encoding=dict(
+            type='SinePositionalEncoding', num_feats=128, normalize=True),
+        rel_cls_loss=dict(
+            type='SeesawLoss',
+            num_classes=56,
+            return_dict=True,
+            loss_weight=2.0),
+        subobj_cls_loss=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=False,
+            loss_weight=4.0,
+            reduction='mean',
+            class_weight=[
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0
+            ]),
+        importance_match_loss=dict(
+            type='BCEWithLogitsLoss', reduction='mean', loss_weight=5.0),
+        loss_cls=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=False,
+            loss_weight=2.0,
+            reduction='mean',
+            class_weight=[
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 0.1
+            ]),
+        loss_mask=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            reduction='mean',
+            loss_weight=5.0),
+        loss_dice=dict(
+            type='DiceLoss',
+            use_sigmoid=True,
+            activate=True,
+            reduction='mean',
+            naive_dice=True,
+            eps=1.0,
+            loss_weight=5.0)),
+    train_cfg=dict(
+        id_assigner=dict(
+            type='SpeaQMatcher',
+            sub_id_cost=dict(type='ClassificationCost', weight=1.0),
+            obj_id_cost=dict(type='ClassificationCost', weight=1.0),
+            r_cls_cost=dict(type='ClassificationCost', weight=0.0)),
+        num_points=12544,
+        oversample_ratio=3.0,
+        importance_sample_ratio=0.75,
+        mask_assigner=dict(
+            type='MaskHungarianAssigner',
+            cls_cost=dict(type='ClassificationCost', weight=2.0),
+            mask_cost=dict(
+                type='CrossEntropyLossCost', weight=5.0, use_sigmoid=True),
+            dice_cost=dict(
+                type='DiceCost', weight=5.0, pred_act=True, eps=1.0)),
+        sampler=dict(type='MaskPseudoSampler')),
+    test_cfg=dict(max_per_img=100))
+custom_imports = dict(
+    imports=[
+        'pairnet.models.frameworks.psgtr', 'pairnet.models.losses.seg_losses',
+        'pairnet.datasets', 'pairnet.datasets.pipelines.loading',
+        'pairnet.datasets.pipelines.rel_randomcrop',
+        'pairnet.models.relation_heads.approaches.matcher',
+        'pairnet.models.relation_heads.pairnet_speaq_head', 'pairnet.utils'
+    ],
+    allow_failed_imports=False)
+evaluation = dict(
+    interval=100000000,
+    metric='sgdet',
+    relation_mode=True,
+    classwise=True,
+    iou_thrs=0.5,
+    detection_method='pan_seg')
+optimizer = dict(
+    type='AdamW',
+    lr=0.0001,
+    weight_decay=0.0001,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            backbone=dict(lr_mult=0.1, decay_mult=1),
+            transformer_decoder=dict(lr_mult=0.1, decay_mult=1),
+            pixel_decoder=dict(lr_mult=0.1, decay_mult=1),
+            decoder_input_projs=dict(lr_mult=0.1, decay_mult=1)),
+        norm_decay_mult=0.0))
+optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
+lr_config = dict(policy='step', gamma=0.5, step=[5, 10])
+runner = dict(type='EpochBasedRunner', max_epochs=15)
+project_name = 'ATM'
+expt_name = 'speaq1'
+work_dir = './work_dirs/speaq1'
+auto_scale_lr = dict(enable=True, base_batch_size=1)
+auto_resume = False
+gpu_ids = [0]
+
+2025-09-02 17:09:12,914 - mmdet - INFO - Set random seed to 10086, deterministic: True
+2025-09-02 17:09:13,564 - mmdet - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': 'torchvision://resnet50'}
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+bbox_head.relation_decoder.layers.0.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.0.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.0.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.0.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.0.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.0.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.0.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.0.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.1.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.1.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.1.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.1.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.1.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.1.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.1.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.2.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.2.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.2.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.2.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.2.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.2.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.2.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.3.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.3.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.3.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.3.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.3.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.3.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.3.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.4.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.4.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.4.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.4.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.4.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.4.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.4.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.5.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.5.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.5.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.5.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.5.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.relation_decoder.layers.5.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.layers.5.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.post_norm.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.relation_decoder.post_norm.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.rel_query_embed.weight - torch.Size([100, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.rel_query_embed2.weight - torch.Size([200, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.rel_query_embed3.weight - torch.Size([200, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.rel_query_feat.weight - torch.Size([100, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.update_importance.conv_layers.0.0.weight - torch.Size([64, 1, 7, 7]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.update_importance.conv_layers.0.0.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.update_importance.conv_layers.1.0.weight - torch.Size([64, 64, 7, 7]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.update_importance.conv_layers.1.0.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.update_importance.conv_layers.2.0.weight - torch.Size([1, 64, 7, 7]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.update_importance.conv_layers.2.0.bias - torch.Size([1]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.0.conv.weight - torch.Size([256, 2048, 1, 1]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.input_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.1.conv.weight - torch.Size([256, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.input_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.2.conv.weight - torch.Size([256, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.input_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.input_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.sampling_offsets.weight - torch.Size([192, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.sampling_offsets.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.attention_weights.weight - torch.Size([96, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.attention_weights.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.0.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.0.0.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.1.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.0.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.sampling_offsets.weight - torch.Size([192, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.sampling_offsets.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.attention_weights.weight - torch.Size([96, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.attention_weights.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.1.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.0.0.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.1.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.1.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.sampling_offsets.weight - torch.Size([192, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.sampling_offsets.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.attention_weights.weight - torch.Size([96, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.attention_weights.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.2.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.0.0.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.1.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.2.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.sampling_offsets.weight - torch.Size([192, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.sampling_offsets.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.attention_weights.weight - torch.Size([96, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.attention_weights.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.3.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.0.0.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.1.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.3.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.sampling_offsets.weight - torch.Size([192, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.sampling_offsets.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.attention_weights.weight - torch.Size([96, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.attention_weights.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.4.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.0.0.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.1.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.4.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.sampling_offsets.weight - torch.Size([192, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.sampling_offsets.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.attention_weights.weight - torch.Size([96, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.attention_weights.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.value_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.value_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.output_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.5.attentions.0.output_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.0.0.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.0.0.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.1.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.encoder.layers.5.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.level_encoding.weight - torch.Size([3, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.lateral_convs.0.conv.weight - torch.Size([256, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.lateral_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.lateral_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.output_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.output_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.output_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.pixel_decoder.mask_feature.weight - torch.Size([256, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.pixel_decoder.mask_feature.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.0.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.0.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.1.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.1.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.1.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.1.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.1.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.1.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.1.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.2.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.2.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.2.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.2.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.2.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.2.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.2.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.3.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.3.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.3.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.3.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.3.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.3.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.3.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.4.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.4.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.4.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.4.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.4.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.4.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.4.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.5.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.5.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.5.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.5.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.5.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.5.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.5.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.6.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.6.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.6.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.6.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.6.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.6.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.6.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.7.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.7.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.7.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.7.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.7.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.7.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.7.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.attentions.0.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.8.attentions.0.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.attentions.0.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.8.attentions.0.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.attentions.1.attn.in_proj_weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.8.attentions.1.attn.in_proj_bias - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.attentions.1.attn.out_proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.8.attentions.1.attn.out_proj.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.ffns.0.layers.0.0.weight - torch.Size([2048, 256]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.8.ffns.0.layers.0.0.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.ffns.0.layers.1.weight - torch.Size([256, 2048]): 
+Initialized by user-defined `init_weights` in CrossHead3  
+
+bbox_head.transformer_decoder.layers.8.ffns.0.layers.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.norms.0.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.norms.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.norms.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.norms.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.norms.2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.layers.8.norms.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.post_norm.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.transformer_decoder.post_norm.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.query_embed.weight - torch.Size([100, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.query_feat.weight - torch.Size([100, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.level_embed.weight - torch.Size([3, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.cls_embed.weight - torch.Size([134, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.cls_embed.bias - torch.Size([134]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.mask_embed.0.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.mask_embed.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.mask_embed.2.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.mask_embed.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.mask_embed.4.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.mask_embed.4.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.sub_query_update.0.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.sub_query_update.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.sub_query_update.2.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.sub_query_update.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.sub_query_update.4.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.sub_query_update.4.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.obj_query_update.0.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.obj_query_update.0.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.obj_query_update.2.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.obj_query_update.2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.obj_query_update.4.weight - torch.Size([256, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.obj_query_update.4.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.rel_cls_embed.weight - torch.Size([56, 256]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+
+bbox_head.rel_cls_embed.bias - torch.Size([56]): 
+The value is the same before and after calling `init_weights` of PSGTr  
+2025-09-02 17:09:28,737 - mmdet - INFO - Training with 1 GPU(s) with 1 samples per GPU. The total batch size is 1.
+2025-09-02 17:09:28,737 - mmdet - INFO - The batch size match the base batch size: 1, will not scaling the LR (0.0001).
+2025-09-02 17:09:34,682 - mmdet - INFO - load checkpoint from local path: pretrain/maskrcnn_resnet50_fpn_coco-bf2d0c1e.pth
+2025-09-02 17:09:34,868 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+unexpected key in source state_dict: rpn.head.conv.weight, rpn.head.conv.bias, rpn.head.cls_logits.weight, rpn.head.cls_logits.bias, rpn.head.bbox_pred.weight, rpn.head.bbox_pred.bias, roi_heads.box_head.fc6.weight, roi_heads.box_head.fc6.bias, roi_heads.box_head.fc7.weight, roi_heads.box_head.fc7.bias, roi_heads.box_predictor.cls_score.weight, roi_heads.box_predictor.cls_score.bias, roi_heads.box_predictor.bbox_pred.weight, roi_heads.box_predictor.bbox_pred.bias, roi_heads.mask_head.mask_fcn1.weight, roi_heads.mask_head.mask_fcn1.bias, roi_heads.mask_head.mask_fcn2.weight, roi_heads.mask_head.mask_fcn2.bias, roi_heads.mask_head.mask_fcn3.weight, roi_heads.mask_head.mask_fcn3.bias, roi_heads.mask_head.mask_fcn4.weight, roi_heads.mask_head.mask_fcn4.bias, roi_heads.mask_predictor.conv5_mask.weight, roi_heads.mask_predictor.conv5_mask.bias, roi_heads.mask_predictor.mask_fcn_logits.weight, roi_heads.mask_predictor.mask_fcn_logits.bias, backbone.body.conv1.weight, backbone.body.bn1.weight, backbone.body.bn1.bias, backbone.body.bn1.running_mean, backbone.body.bn1.running_var, backbone.body.layer1.0.conv1.weight, backbone.body.layer1.0.bn1.weight, backbone.body.layer1.0.bn1.bias, backbone.body.layer1.0.bn1.running_mean, backbone.body.layer1.0.bn1.running_var, backbone.body.layer1.0.conv2.weight, backbone.body.layer1.0.bn2.weight, backbone.body.layer1.0.bn2.bias, backbone.body.layer1.0.bn2.running_mean, backbone.body.layer1.0.bn2.running_var, backbone.body.layer1.0.conv3.weight, backbone.body.layer1.0.bn3.weight, backbone.body.layer1.0.bn3.bias, backbone.body.layer1.0.bn3.running_mean, backbone.body.layer1.0.bn3.running_var, backbone.body.layer1.0.downsample.0.weight, backbone.body.layer1.0.downsample.1.weight, backbone.body.layer1.0.downsample.1.bias, backbone.body.layer1.0.downsample.1.running_mean, backbone.body.layer1.0.downsample.1.running_var, backbone.body.layer1.1.conv1.weight, backbone.body.layer1.1.bn1.weight, backbone.body.layer1.1.bn1.bias, backbone.body.layer1.1.bn1.running_mean, backbone.body.layer1.1.bn1.running_var, backbone.body.layer1.1.conv2.weight, backbone.body.layer1.1.bn2.weight, backbone.body.layer1.1.bn2.bias, backbone.body.layer1.1.bn2.running_mean, backbone.body.layer1.1.bn2.running_var, backbone.body.layer1.1.conv3.weight, backbone.body.layer1.1.bn3.weight, backbone.body.layer1.1.bn3.bias, backbone.body.layer1.1.bn3.running_mean, backbone.body.layer1.1.bn3.running_var, backbone.body.layer1.2.conv1.weight, backbone.body.layer1.2.bn1.weight, backbone.body.layer1.2.bn1.bias, backbone.body.layer1.2.bn1.running_mean, backbone.body.layer1.2.bn1.running_var, backbone.body.layer1.2.conv2.weight, backbone.body.layer1.2.bn2.weight, backbone.body.layer1.2.bn2.bias, backbone.body.layer1.2.bn2.running_mean, backbone.body.layer1.2.bn2.running_var, backbone.body.layer1.2.conv3.weight, backbone.body.layer1.2.bn3.weight, backbone.body.layer1.2.bn3.bias, backbone.body.layer1.2.bn3.running_mean, backbone.body.layer1.2.bn3.running_var, backbone.body.layer2.0.conv1.weight, backbone.body.layer2.0.bn1.weight, backbone.body.layer2.0.bn1.bias, backbone.body.layer2.0.bn1.running_mean, backbone.body.layer2.0.bn1.running_var, backbone.body.layer2.0.conv2.weight, backbone.body.layer2.0.bn2.weight, backbone.body.layer2.0.bn2.bias, backbone.body.layer2.0.bn2.running_mean, backbone.body.layer2.0.bn2.running_var, backbone.body.layer2.0.conv3.weight, backbone.body.layer2.0.bn3.weight, backbone.body.layer2.0.bn3.bias, backbone.body.layer2.0.bn3.running_mean, backbone.body.layer2.0.bn3.running_var, backbone.body.layer2.0.downsample.0.weight, backbone.body.layer2.0.downsample.1.weight, backbone.body.layer2.0.downsample.1.bias, backbone.body.layer2.0.downsample.1.running_mean, backbone.body.layer2.0.downsample.1.running_var, backbone.body.layer2.1.conv1.weight, backbone.body.layer2.1.bn1.weight, backbone.body.layer2.1.bn1.bias, backbone.body.layer2.1.bn1.running_mean, backbone.body.layer2.1.bn1.running_var, backbone.body.layer2.1.conv2.weight, backbone.body.layer2.1.bn2.weight, backbone.body.layer2.1.bn2.bias, backbone.body.layer2.1.bn2.running_mean, backbone.body.layer2.1.bn2.running_var, backbone.body.layer2.1.conv3.weight, backbone.body.layer2.1.bn3.weight, backbone.body.layer2.1.bn3.bias, backbone.body.layer2.1.bn3.running_mean, backbone.body.layer2.1.bn3.running_var, backbone.body.layer2.2.conv1.weight, backbone.body.layer2.2.bn1.weight, backbone.body.layer2.2.bn1.bias, backbone.body.layer2.2.bn1.running_mean, backbone.body.layer2.2.bn1.running_var, backbone.body.layer2.2.conv2.weight, backbone.body.layer2.2.bn2.weight, backbone.body.layer2.2.bn2.bias, backbone.body.layer2.2.bn2.running_mean, backbone.body.layer2.2.bn2.running_var, backbone.body.layer2.2.conv3.weight, backbone.body.layer2.2.bn3.weight, backbone.body.layer2.2.bn3.bias, backbone.body.layer2.2.bn3.running_mean, backbone.body.layer2.2.bn3.running_var, backbone.body.layer2.3.conv1.weight, backbone.body.layer2.3.bn1.weight, backbone.body.layer2.3.bn1.bias, backbone.body.layer2.3.bn1.running_mean, backbone.body.layer2.3.bn1.running_var, backbone.body.layer2.3.conv2.weight, backbone.body.layer2.3.bn2.weight, backbone.body.layer2.3.bn2.bias, backbone.body.layer2.3.bn2.running_mean, backbone.body.layer2.3.bn2.running_var, backbone.body.layer2.3.conv3.weight, backbone.body.layer2.3.bn3.weight, backbone.body.layer2.3.bn3.bias, backbone.body.layer2.3.bn3.running_mean, backbone.body.layer2.3.bn3.running_var, backbone.body.layer3.0.conv1.weight, backbone.body.layer3.0.bn1.weight, backbone.body.layer3.0.bn1.bias, backbone.body.layer3.0.bn1.running_mean, backbone.body.layer3.0.bn1.running_var, backbone.body.layer3.0.conv2.weight, backbone.body.layer3.0.bn2.weight, backbone.body.layer3.0.bn2.bias, backbone.body.layer3.0.bn2.running_mean, backbone.body.layer3.0.bn2.running_var, backbone.body.layer3.0.conv3.weight, backbone.body.layer3.0.bn3.weight, backbone.body.layer3.0.bn3.bias, backbone.body.layer3.0.bn3.running_mean, backbone.body.layer3.0.bn3.running_var, backbone.body.layer3.0.downsample.0.weight, backbone.body.layer3.0.downsample.1.weight, backbone.body.layer3.0.downsample.1.bias, backbone.body.layer3.0.downsample.1.running_mean, backbone.body.layer3.0.downsample.1.running_var, backbone.body.layer3.1.conv1.weight, backbone.body.layer3.1.bn1.weight, backbone.body.layer3.1.bn1.bias, backbone.body.layer3.1.bn1.running_mean, backbone.body.layer3.1.bn1.running_var, backbone.body.layer3.1.conv2.weight, backbone.body.layer3.1.bn2.weight, backbone.body.layer3.1.bn2.bias, backbone.body.layer3.1.bn2.running_mean, backbone.body.layer3.1.bn2.running_var, backbone.body.layer3.1.conv3.weight, backbone.body.layer3.1.bn3.weight, backbone.body.layer3.1.bn3.bias, backbone.body.layer3.1.bn3.running_mean, backbone.body.layer3.1.bn3.running_var, backbone.body.layer3.2.conv1.weight, backbone.body.layer3.2.bn1.weight, backbone.body.layer3.2.bn1.bias, backbone.body.layer3.2.bn1.running_mean, backbone.body.layer3.2.bn1.running_var, backbone.body.layer3.2.conv2.weight, backbone.body.layer3.2.bn2.weight, backbone.body.layer3.2.bn2.bias, backbone.body.layer3.2.bn2.running_mean, backbone.body.layer3.2.bn2.running_var, backbone.body.layer3.2.conv3.weight, backbone.body.layer3.2.bn3.weight, backbone.body.layer3.2.bn3.bias, backbone.body.layer3.2.bn3.running_mean, backbone.body.layer3.2.bn3.running_var, backbone.body.layer3.3.conv1.weight, backbone.body.layer3.3.bn1.weight, backbone.body.layer3.3.bn1.bias, backbone.body.layer3.3.bn1.running_mean, backbone.body.layer3.3.bn1.running_var, backbone.body.layer3.3.conv2.weight, backbone.body.layer3.3.bn2.weight, backbone.body.layer3.3.bn2.bias, backbone.body.layer3.3.bn2.running_mean, backbone.body.layer3.3.bn2.running_var, backbone.body.layer3.3.conv3.weight, backbone.body.layer3.3.bn3.weight, backbone.body.layer3.3.bn3.bias, backbone.body.layer3.3.bn3.running_mean, backbone.body.layer3.3.bn3.running_var, backbone.body.layer3.4.conv1.weight, backbone.body.layer3.4.bn1.weight, backbone.body.layer3.4.bn1.bias, backbone.body.layer3.4.bn1.running_mean, backbone.body.layer3.4.bn1.running_var, backbone.body.layer3.4.conv2.weight, backbone.body.layer3.4.bn2.weight, backbone.body.layer3.4.bn2.bias, backbone.body.layer3.4.bn2.running_mean, backbone.body.layer3.4.bn2.running_var, backbone.body.layer3.4.conv3.weight, backbone.body.layer3.4.bn3.weight, backbone.body.layer3.4.bn3.bias, backbone.body.layer3.4.bn3.running_mean, backbone.body.layer3.4.bn3.running_var, backbone.body.layer3.5.conv1.weight, backbone.body.layer3.5.bn1.weight, backbone.body.layer3.5.bn1.bias, backbone.body.layer3.5.bn1.running_mean, backbone.body.layer3.5.bn1.running_var, backbone.body.layer3.5.conv2.weight, backbone.body.layer3.5.bn2.weight, backbone.body.layer3.5.bn2.bias, backbone.body.layer3.5.bn2.running_mean, backbone.body.layer3.5.bn2.running_var, backbone.body.layer3.5.conv3.weight, backbone.body.layer3.5.bn3.weight, backbone.body.layer3.5.bn3.bias, backbone.body.layer3.5.bn3.running_mean, backbone.body.layer3.5.bn3.running_var, backbone.body.layer4.0.conv1.weight, backbone.body.layer4.0.bn1.weight, backbone.body.layer4.0.bn1.bias, backbone.body.layer4.0.bn1.running_mean, backbone.body.layer4.0.bn1.running_var, backbone.body.layer4.0.conv2.weight, backbone.body.layer4.0.bn2.weight, backbone.body.layer4.0.bn2.bias, backbone.body.layer4.0.bn2.running_mean, backbone.body.layer4.0.bn2.running_var, backbone.body.layer4.0.conv3.weight, backbone.body.layer4.0.bn3.weight, backbone.body.layer4.0.bn3.bias, backbone.body.layer4.0.bn3.running_mean, backbone.body.layer4.0.bn3.running_var, backbone.body.layer4.0.downsample.0.weight, backbone.body.layer4.0.downsample.1.weight, backbone.body.layer4.0.downsample.1.bias, backbone.body.layer4.0.downsample.1.running_mean, backbone.body.layer4.0.downsample.1.running_var, backbone.body.layer4.1.conv1.weight, backbone.body.layer4.1.bn1.weight, backbone.body.layer4.1.bn1.bias, backbone.body.layer4.1.bn1.running_mean, backbone.body.layer4.1.bn1.running_var, backbone.body.layer4.1.conv2.weight, backbone.body.layer4.1.bn2.weight, backbone.body.layer4.1.bn2.bias, backbone.body.layer4.1.bn2.running_mean, backbone.body.layer4.1.bn2.running_var, backbone.body.layer4.1.conv3.weight, backbone.body.layer4.1.bn3.weight, backbone.body.layer4.1.bn3.bias, backbone.body.layer4.1.bn3.running_mean, backbone.body.layer4.1.bn3.running_var, backbone.body.layer4.2.conv1.weight, backbone.body.layer4.2.bn1.weight, backbone.body.layer4.2.bn1.bias, backbone.body.layer4.2.bn1.running_mean, backbone.body.layer4.2.bn1.running_var, backbone.body.layer4.2.conv2.weight, backbone.body.layer4.2.bn2.weight, backbone.body.layer4.2.bn2.bias, backbone.body.layer4.2.bn2.running_mean, backbone.body.layer4.2.bn2.running_var, backbone.body.layer4.2.conv3.weight, backbone.body.layer4.2.bn3.weight, backbone.body.layer4.2.bn3.bias, backbone.body.layer4.2.bn3.running_mean, backbone.body.layer4.2.bn3.running_var, backbone.fpn.inner_blocks.0.weight, backbone.fpn.inner_blocks.0.bias, backbone.fpn.inner_blocks.1.weight, backbone.fpn.inner_blocks.1.bias, backbone.fpn.inner_blocks.2.weight, backbone.fpn.inner_blocks.2.bias, backbone.fpn.inner_blocks.3.weight, backbone.fpn.inner_blocks.3.bias, backbone.fpn.layer_blocks.0.weight, backbone.fpn.layer_blocks.0.bias, backbone.fpn.layer_blocks.1.weight, backbone.fpn.layer_blocks.1.bias, backbone.fpn.layer_blocks.2.weight, backbone.fpn.layer_blocks.2.bias, backbone.fpn.layer_blocks.3.weight, backbone.fpn.layer_blocks.3.bias
+
+missing keys in source state_dict: backbone.conv1.weight, backbone.bn1.weight, backbone.bn1.bias, backbone.bn1.running_mean, backbone.bn1.running_var, backbone.layer1.0.conv1.weight, backbone.layer1.0.bn1.weight, backbone.layer1.0.bn1.bias, backbone.layer1.0.bn1.running_mean, backbone.layer1.0.bn1.running_var, backbone.layer1.0.conv2.weight, backbone.layer1.0.bn2.weight, backbone.layer1.0.bn2.bias, backbone.layer1.0.bn2.running_mean, backbone.layer1.0.bn2.running_var, backbone.layer1.0.conv3.weight, backbone.layer1.0.bn3.weight, backbone.layer1.0.bn3.bias, backbone.layer1.0.bn3.running_mean, backbone.layer1.0.bn3.running_var, backbone.layer1.0.downsample.0.weight, backbone.layer1.0.downsample.1.weight, backbone.layer1.0.downsample.1.bias, backbone.layer1.0.downsample.1.running_mean, backbone.layer1.0.downsample.1.running_var, backbone.layer1.1.conv1.weight, backbone.layer1.1.bn1.weight, backbone.layer1.1.bn1.bias, backbone.layer1.1.bn1.running_mean, backbone.layer1.1.bn1.running_var, backbone.layer1.1.conv2.weight, backbone.layer1.1.bn2.weight, backbone.layer1.1.bn2.bias, backbone.layer1.1.bn2.running_mean, backbone.layer1.1.bn2.running_var, backbone.layer1.1.conv3.weight, backbone.layer1.1.bn3.weight, backbone.layer1.1.bn3.bias, backbone.layer1.1.bn3.running_mean, backbone.layer1.1.bn3.running_var, backbone.layer1.2.conv1.weight, backbone.layer1.2.bn1.weight, backbone.layer1.2.bn1.bias, backbone.layer1.2.bn1.running_mean, backbone.layer1.2.bn1.running_var, backbone.layer1.2.conv2.weight, backbone.layer1.2.bn2.weight, backbone.layer1.2.bn2.bias, backbone.layer1.2.bn2.running_mean, backbone.layer1.2.bn2.running_var, backbone.layer1.2.conv3.weight, backbone.layer1.2.bn3.weight, backbone.layer1.2.bn3.bias, backbone.layer1.2.bn3.running_mean, backbone.layer1.2.bn3.running_var, backbone.layer2.0.conv1.weight, backbone.layer2.0.bn1.weight, backbone.layer2.0.bn1.bias, backbone.layer2.0.bn1.running_mean, backbone.layer2.0.bn1.running_var, backbone.layer2.0.conv2.weight, backbone.layer2.0.bn2.weight, backbone.layer2.0.bn2.bias, backbone.layer2.0.bn2.running_mean, backbone.layer2.0.bn2.running_var, backbone.layer2.0.conv3.weight, backbone.layer2.0.bn3.weight, backbone.layer2.0.bn3.bias, backbone.layer2.0.bn3.running_mean, backbone.layer2.0.bn3.running_var, backbone.layer2.0.downsample.0.weight, backbone.layer2.0.downsample.1.weight, backbone.layer2.0.downsample.1.bias, backbone.layer2.0.downsample.1.running_mean, backbone.layer2.0.downsample.1.running_var, backbone.layer2.1.conv1.weight, backbone.layer2.1.bn1.weight, backbone.layer2.1.bn1.bias, backbone.layer2.1.bn1.running_mean, backbone.layer2.1.bn1.running_var, backbone.layer2.1.conv2.weight, backbone.layer2.1.bn2.weight, backbone.layer2.1.bn2.bias, backbone.layer2.1.bn2.running_mean, backbone.layer2.1.bn2.running_var, backbone.layer2.1.conv3.weight, backbone.layer2.1.bn3.weight, backbone.layer2.1.bn3.bias, backbone.layer2.1.bn3.running_mean, backbone.layer2.1.bn3.running_var, backbone.layer2.2.conv1.weight, backbone.layer2.2.bn1.weight, backbone.layer2.2.bn1.bias, backbone.layer2.2.bn1.running_mean, backbone.layer2.2.bn1.running_var, backbone.layer2.2.conv2.weight, backbone.layer2.2.bn2.weight, backbone.layer2.2.bn2.bias, backbone.layer2.2.bn2.running_mean, backbone.layer2.2.bn2.running_var, backbone.layer2.2.conv3.weight, backbone.layer2.2.bn3.weight, backbone.layer2.2.bn3.bias, backbone.layer2.2.bn3.running_mean, backbone.layer2.2.bn3.running_var, backbone.layer2.3.conv1.weight, backbone.layer2.3.bn1.weight, backbone.layer2.3.bn1.bias, backbone.layer2.3.bn1.running_mean, backbone.layer2.3.bn1.running_var, backbone.layer2.3.conv2.weight, backbone.layer2.3.bn2.weight, backbone.layer2.3.bn2.bias, backbone.layer2.3.bn2.running_mean, backbone.layer2.3.bn2.running_var, backbone.layer2.3.conv3.weight, backbone.layer2.3.bn3.weight, backbone.layer2.3.bn3.bias, backbone.layer2.3.bn3.running_mean, backbone.layer2.3.bn3.running_var, backbone.layer3.0.conv1.weight, backbone.layer3.0.bn1.weight, backbone.layer3.0.bn1.bias, backbone.layer3.0.bn1.running_mean, backbone.layer3.0.bn1.running_var, backbone.layer3.0.conv2.weight, backbone.layer3.0.bn2.weight, backbone.layer3.0.bn2.bias, backbone.layer3.0.bn2.running_mean, backbone.layer3.0.bn2.running_var, backbone.layer3.0.conv3.weight, backbone.layer3.0.bn3.weight, backbone.layer3.0.bn3.bias, backbone.layer3.0.bn3.running_mean, backbone.layer3.0.bn3.running_var, backbone.layer3.0.downsample.0.weight, backbone.layer3.0.downsample.1.weight, backbone.layer3.0.downsample.1.bias, backbone.layer3.0.downsample.1.running_mean, backbone.layer3.0.downsample.1.running_var, backbone.layer3.1.conv1.weight, backbone.layer3.1.bn1.weight, backbone.layer3.1.bn1.bias, backbone.layer3.1.bn1.running_mean, backbone.layer3.1.bn1.running_var, backbone.layer3.1.conv2.weight, backbone.layer3.1.bn2.weight, backbone.layer3.1.bn2.bias, backbone.layer3.1.bn2.running_mean, backbone.layer3.1.bn2.running_var, backbone.layer3.1.conv3.weight, backbone.layer3.1.bn3.weight, backbone.layer3.1.bn3.bias, backbone.layer3.1.bn3.running_mean, backbone.layer3.1.bn3.running_var, backbone.layer3.2.conv1.weight, backbone.layer3.2.bn1.weight, backbone.layer3.2.bn1.bias, backbone.layer3.2.bn1.running_mean, backbone.layer3.2.bn1.running_var, backbone.layer3.2.conv2.weight, backbone.layer3.2.bn2.weight, backbone.layer3.2.bn2.bias, backbone.layer3.2.bn2.running_mean, backbone.layer3.2.bn2.running_var, backbone.layer3.2.conv3.weight, backbone.layer3.2.bn3.weight, backbone.layer3.2.bn3.bias, backbone.layer3.2.bn3.running_mean, backbone.layer3.2.bn3.running_var, backbone.layer3.3.conv1.weight, backbone.layer3.3.bn1.weight, backbone.layer3.3.bn1.bias, backbone.layer3.3.bn1.running_mean, backbone.layer3.3.bn1.running_var, backbone.layer3.3.conv2.weight, backbone.layer3.3.bn2.weight, backbone.layer3.3.bn2.bias, backbone.layer3.3.bn2.running_mean, backbone.layer3.3.bn2.running_var, backbone.layer3.3.conv3.weight, backbone.layer3.3.bn3.weight, backbone.layer3.3.bn3.bias, backbone.layer3.3.bn3.running_mean, backbone.layer3.3.bn3.running_var, backbone.layer3.4.conv1.weight, backbone.layer3.4.bn1.weight, backbone.layer3.4.bn1.bias, backbone.layer3.4.bn1.running_mean, backbone.layer3.4.bn1.running_var, backbone.layer3.4.conv2.weight, backbone.layer3.4.bn2.weight, backbone.layer3.4.bn2.bias, backbone.layer3.4.bn2.running_mean, backbone.layer3.4.bn2.running_var, backbone.layer3.4.conv3.weight, backbone.layer3.4.bn3.weight, backbone.layer3.4.bn3.bias, backbone.layer3.4.bn3.running_mean, backbone.layer3.4.bn3.running_var, backbone.layer3.5.conv1.weight, backbone.layer3.5.bn1.weight, backbone.layer3.5.bn1.bias, backbone.layer3.5.bn1.running_mean, backbone.layer3.5.bn1.running_var, backbone.layer3.5.conv2.weight, backbone.layer3.5.bn2.weight, backbone.layer3.5.bn2.bias, backbone.layer3.5.bn2.running_mean, backbone.layer3.5.bn2.running_var, backbone.layer3.5.conv3.weight, backbone.layer3.5.bn3.weight, backbone.layer3.5.bn3.bias, backbone.layer3.5.bn3.running_mean, backbone.layer3.5.bn3.running_var, backbone.layer4.0.conv1.weight, backbone.layer4.0.bn1.weight, backbone.layer4.0.bn1.bias, backbone.layer4.0.bn1.running_mean, backbone.layer4.0.bn1.running_var, backbone.layer4.0.conv2.weight, backbone.layer4.0.bn2.weight, backbone.layer4.0.bn2.bias, backbone.layer4.0.bn2.running_mean, backbone.layer4.0.bn2.running_var, backbone.layer4.0.conv3.weight, backbone.layer4.0.bn3.weight, backbone.layer4.0.bn3.bias, backbone.layer4.0.bn3.running_mean, backbone.layer4.0.bn3.running_var, backbone.layer4.0.downsample.0.weight, backbone.layer4.0.downsample.1.weight, backbone.layer4.0.downsample.1.bias, backbone.layer4.0.downsample.1.running_mean, backbone.layer4.0.downsample.1.running_var, backbone.layer4.1.conv1.weight, backbone.layer4.1.bn1.weight, backbone.layer4.1.bn1.bias, backbone.layer4.1.bn1.running_mean, backbone.layer4.1.bn1.running_var, backbone.layer4.1.conv2.weight, backbone.layer4.1.bn2.weight, backbone.layer4.1.bn2.bias, backbone.layer4.1.bn2.running_mean, backbone.layer4.1.bn2.running_var, backbone.layer4.1.conv3.weight, backbone.layer4.1.bn3.weight, backbone.layer4.1.bn3.bias, backbone.layer4.1.bn3.running_mean, backbone.layer4.1.bn3.running_var, backbone.layer4.2.conv1.weight, backbone.layer4.2.bn1.weight, backbone.layer4.2.bn1.bias, backbone.layer4.2.bn1.running_mean, backbone.layer4.2.bn1.running_var, backbone.layer4.2.conv2.weight, backbone.layer4.2.bn2.weight, backbone.layer4.2.bn2.bias, backbone.layer4.2.bn2.running_mean, backbone.layer4.2.bn2.running_var, backbone.layer4.2.conv3.weight, backbone.layer4.2.bn3.weight, backbone.layer4.2.bn3.bias, backbone.layer4.2.bn3.running_mean, backbone.layer4.2.bn3.running_var, bbox_head.relation_decoder.layers.0.attentions.0.attn.in_proj_weight, bbox_head.relation_decoder.layers.0.attentions.0.attn.in_proj_bias, bbox_head.relation_decoder.layers.0.attentions.0.attn.out_proj.weight, bbox_head.relation_decoder.layers.0.attentions.0.attn.out_proj.bias, bbox_head.relation_decoder.layers.0.attentions.1.attn.in_proj_weight, bbox_head.relation_decoder.layers.0.attentions.1.attn.in_proj_bias, bbox_head.relation_decoder.layers.0.attentions.1.attn.out_proj.weight, bbox_head.relation_decoder.layers.0.attentions.1.attn.out_proj.bias, bbox_head.relation_decoder.layers.0.ffns.0.layers.0.0.weight, bbox_head.relation_decoder.layers.0.ffns.0.layers.0.0.bias, bbox_head.relation_decoder.layers.0.ffns.0.layers.1.weight, bbox_head.relation_decoder.layers.0.ffns.0.layers.1.bias, bbox_head.relation_decoder.layers.0.norms.0.weight, bbox_head.relation_decoder.layers.0.norms.0.bias, bbox_head.relation_decoder.layers.0.norms.1.weight, bbox_head.relation_decoder.layers.0.norms.1.bias, bbox_head.relation_decoder.layers.0.norms.2.weight, bbox_head.relation_decoder.layers.0.norms.2.bias, bbox_head.relation_decoder.layers.1.attentions.0.attn.in_proj_weight, bbox_head.relation_decoder.layers.1.attentions.0.attn.in_proj_bias, bbox_head.relation_decoder.layers.1.attentions.0.attn.out_proj.weight, bbox_head.relation_decoder.layers.1.attentions.0.attn.out_proj.bias, bbox_head.relation_decoder.layers.1.attentions.1.attn.in_proj_weight, bbox_head.relation_decoder.layers.1.attentions.1.attn.in_proj_bias, bbox_head.relation_decoder.layers.1.attentions.1.attn.out_proj.weight, bbox_head.relation_decoder.layers.1.attentions.1.attn.out_proj.bias, bbox_head.relation_decoder.layers.1.ffns.0.layers.0.0.weight, bbox_head.relation_decoder.layers.1.ffns.0.layers.0.0.bias, bbox_head.relation_decoder.layers.1.ffns.0.layers.1.weight, bbox_head.relation_decoder.layers.1.ffns.0.layers.1.bias, bbox_head.relation_decoder.layers.1.norms.0.weight, bbox_head.relation_decoder.layers.1.norms.0.bias, bbox_head.relation_decoder.layers.1.norms.1.weight, bbox_head.relation_decoder.layers.1.norms.1.bias, bbox_head.relation_decoder.layers.1.norms.2.weight, bbox_head.relation_decoder.layers.1.norms.2.bias, bbox_head.relation_decoder.layers.2.attentions.0.attn.in_proj_weight, bbox_head.relation_decoder.layers.2.attentions.0.attn.in_proj_bias, bbox_head.relation_decoder.layers.2.attentions.0.attn.out_proj.weight, bbox_head.relation_decoder.layers.2.attentions.0.attn.out_proj.bias, bbox_head.relation_decoder.layers.2.attentions.1.attn.in_proj_weight, bbox_head.relation_decoder.layers.2.attentions.1.attn.in_proj_bias, bbox_head.relation_decoder.layers.2.attentions.1.attn.out_proj.weight, bbox_head.relation_decoder.layers.2.attentions.1.attn.out_proj.bias, bbox_head.relation_decoder.layers.2.ffns.0.layers.0.0.weight, bbox_head.relation_decoder.layers.2.ffns.0.layers.0.0.bias, bbox_head.relation_decoder.layers.2.ffns.0.layers.1.weight, bbox_head.relation_decoder.layers.2.ffns.0.layers.1.bias, bbox_head.relation_decoder.layers.2.norms.0.weight, bbox_head.relation_decoder.layers.2.norms.0.bias, bbox_head.relation_decoder.layers.2.norms.1.weight, bbox_head.relation_decoder.layers.2.norms.1.bias, bbox_head.relation_decoder.layers.2.norms.2.weight, bbox_head.relation_decoder.layers.2.norms.2.bias, bbox_head.relation_decoder.layers.3.attentions.0.attn.in_proj_weight, bbox_head.relation_decoder.layers.3.attentions.0.attn.in_proj_bias, bbox_head.relation_decoder.layers.3.attentions.0.attn.out_proj.weight, bbox_head.relation_decoder.layers.3.attentions.0.attn.out_proj.bias, bbox_head.relation_decoder.layers.3.attentions.1.attn.in_proj_weight, bbox_head.relation_decoder.layers.3.attentions.1.attn.in_proj_bias, bbox_head.relation_decoder.layers.3.attentions.1.attn.out_proj.weight, bbox_head.relation_decoder.layers.3.attentions.1.attn.out_proj.bias, bbox_head.relation_decoder.layers.3.ffns.0.layers.0.0.weight, bbox_head.relation_decoder.layers.3.ffns.0.layers.0.0.bias, bbox_head.relation_decoder.layers.3.ffns.0.layers.1.weight, bbox_head.relation_decoder.layers.3.ffns.0.layers.1.bias, bbox_head.relation_decoder.layers.3.norms.0.weight, bbox_head.relation_decoder.layers.3.norms.0.bias, bbox_head.relation_decoder.layers.3.norms.1.weight, bbox_head.relation_decoder.layers.3.norms.1.bias, bbox_head.relation_decoder.layers.3.norms.2.weight, bbox_head.relation_decoder.layers.3.norms.2.bias, bbox_head.relation_decoder.layers.4.attentions.0.attn.in_proj_weight, bbox_head.relation_decoder.layers.4.attentions.0.attn.in_proj_bias, bbox_head.relation_decoder.layers.4.attentions.0.attn.out_proj.weight, bbox_head.relation_decoder.layers.4.attentions.0.attn.out_proj.bias, bbox_head.relation_decoder.layers.4.attentions.1.attn.in_proj_weight, bbox_head.relation_decoder.layers.4.attentions.1.attn.in_proj_bias, bbox_head.relation_decoder.layers.4.attentions.1.attn.out_proj.weight, bbox_head.relation_decoder.layers.4.attentions.1.attn.out_proj.bias, bbox_head.relation_decoder.layers.4.ffns.0.layers.0.0.weight, bbox_head.relation_decoder.layers.4.ffns.0.layers.0.0.bias, bbox_head.relation_decoder.layers.4.ffns.0.layers.1.weight, bbox_head.relation_decoder.layers.4.ffns.0.layers.1.bias, bbox_head.relation_decoder.layers.4.norms.0.weight, bbox_head.relation_decoder.layers.4.norms.0.bias, bbox_head.relation_decoder.layers.4.norms.1.weight, bbox_head.relation_decoder.layers.4.norms.1.bias, bbox_head.relation_decoder.layers.4.norms.2.weight, bbox_head.relation_decoder.layers.4.norms.2.bias, bbox_head.relation_decoder.layers.5.attentions.0.attn.in_proj_weight, bbox_head.relation_decoder.layers.5.attentions.0.attn.in_proj_bias, bbox_head.relation_decoder.layers.5.attentions.0.attn.out_proj.weight, bbox_head.relation_decoder.layers.5.attentions.0.attn.out_proj.bias, bbox_head.relation_decoder.layers.5.attentions.1.attn.in_proj_weight, bbox_head.relation_decoder.layers.5.attentions.1.attn.in_proj_bias, bbox_head.relation_decoder.layers.5.attentions.1.attn.out_proj.weight, bbox_head.relation_decoder.layers.5.attentions.1.attn.out_proj.bias, bbox_head.relation_decoder.layers.5.ffns.0.layers.0.0.weight, bbox_head.relation_decoder.layers.5.ffns.0.layers.0.0.bias, bbox_head.relation_decoder.layers.5.ffns.0.layers.1.weight, bbox_head.relation_decoder.layers.5.ffns.0.layers.1.bias, bbox_head.relation_decoder.layers.5.norms.0.weight, bbox_head.relation_decoder.layers.5.norms.0.bias, bbox_head.relation_decoder.layers.5.norms.1.weight, bbox_head.relation_decoder.layers.5.norms.1.bias, bbox_head.relation_decoder.layers.5.norms.2.weight, bbox_head.relation_decoder.layers.5.norms.2.bias, bbox_head.relation_decoder.post_norm.weight, bbox_head.relation_decoder.post_norm.bias, bbox_head.rel_query_embed.weight, bbox_head.rel_query_embed2.weight, bbox_head.rel_query_embed3.weight, bbox_head.rel_query_feat.weight, bbox_head.update_importance.conv_layers.0.0.weight, bbox_head.update_importance.conv_layers.0.0.bias, bbox_head.update_importance.conv_layers.1.0.weight, bbox_head.update_importance.conv_layers.1.0.bias, bbox_head.update_importance.conv_layers.2.0.weight, bbox_head.update_importance.conv_layers.2.0.bias, bbox_head.pixel_decoder.input_convs.0.conv.weight, bbox_head.pixel_decoder.input_convs.0.conv.bias, bbox_head.pixel_decoder.input_convs.0.gn.weight, bbox_head.pixel_decoder.input_convs.0.gn.bias, bbox_head.pixel_decoder.input_convs.1.conv.weight, bbox_head.pixel_decoder.input_convs.1.conv.bias, bbox_head.pixel_decoder.input_convs.1.gn.weight, bbox_head.pixel_decoder.input_convs.1.gn.bias, bbox_head.pixel_decoder.input_convs.2.conv.weight, bbox_head.pixel_decoder.input_convs.2.conv.bias, bbox_head.pixel_decoder.input_convs.2.gn.weight, bbox_head.pixel_decoder.input_convs.2.gn.bias, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.sampling_offsets.weight, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.sampling_offsets.bias, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.attention_weights.weight, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.attention_weights.bias, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.value_proj.weight, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.value_proj.bias, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.output_proj.weight, bbox_head.pixel_decoder.encoder.layers.0.attentions.0.output_proj.bias, bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.0.0.weight, bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.0.0.bias, bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.1.weight, bbox_head.pixel_decoder.encoder.layers.0.ffns.0.layers.1.bias, bbox_head.pixel_decoder.encoder.layers.0.norms.0.weight, bbox_head.pixel_decoder.encoder.layers.0.norms.0.bias, bbox_head.pixel_decoder.encoder.layers.0.norms.1.weight, bbox_head.pixel_decoder.encoder.layers.0.norms.1.bias, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.sampling_offsets.weight, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.sampling_offsets.bias, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.attention_weights.weight, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.attention_weights.bias, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.value_proj.weight, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.value_proj.bias, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.output_proj.weight, bbox_head.pixel_decoder.encoder.layers.1.attentions.0.output_proj.bias, bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.0.0.weight, bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.0.0.bias, bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.1.weight, bbox_head.pixel_decoder.encoder.layers.1.ffns.0.layers.1.bias, bbox_head.pixel_decoder.encoder.layers.1.norms.0.weight, bbox_head.pixel_decoder.encoder.layers.1.norms.0.bias, bbox_head.pixel_decoder.encoder.layers.1.norms.1.weight, bbox_head.pixel_decoder.encoder.layers.1.norms.1.bias, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.sampling_offsets.weight, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.sampling_offsets.bias, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.attention_weights.weight, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.attention_weights.bias, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.value_proj.weight, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.value_proj.bias, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.output_proj.weight, bbox_head.pixel_decoder.encoder.layers.2.attentions.0.output_proj.bias, bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.0.0.weight, bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.0.0.bias, bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.1.weight, bbox_head.pixel_decoder.encoder.layers.2.ffns.0.layers.1.bias, bbox_head.pixel_decoder.encoder.layers.2.norms.0.weight, bbox_head.pixel_decoder.encoder.layers.2.norms.0.bias, bbox_head.pixel_decoder.encoder.layers.2.norms.1.weight, bbox_head.pixel_decoder.encoder.layers.2.norms.1.bias, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.sampling_offsets.weight, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.sampling_offsets.bias, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.attention_weights.weight, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.attention_weights.bias, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.value_proj.weight, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.value_proj.bias, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.output_proj.weight, bbox_head.pixel_decoder.encoder.layers.3.attentions.0.output_proj.bias, bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.0.0.weight, bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.0.0.bias, bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.1.weight, bbox_head.pixel_decoder.encoder.layers.3.ffns.0.layers.1.bias, bbox_head.pixel_decoder.encoder.layers.3.norms.0.weight, bbox_head.pixel_decoder.encoder.layers.3.norms.0.bias, bbox_head.pixel_decoder.encoder.layers.3.norms.1.weight, bbox_head.pixel_decoder.encoder.layers.3.norms.1.bias, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.sampling_offsets.weight, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.sampling_offsets.bias, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.attention_weights.weight, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.attention_weights.bias, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.value_proj.weight, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.value_proj.bias, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.output_proj.weight, bbox_head.pixel_decoder.encoder.layers.4.attentions.0.output_proj.bias, bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.0.0.weight, bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.0.0.bias, bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.1.weight, bbox_head.pixel_decoder.encoder.layers.4.ffns.0.layers.1.bias, bbox_head.pixel_decoder.encoder.layers.4.norms.0.weight, bbox_head.pixel_decoder.encoder.layers.4.norms.0.bias, bbox_head.pixel_decoder.encoder.layers.4.norms.1.weight, bbox_head.pixel_decoder.encoder.layers.4.norms.1.bias, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.sampling_offsets.weight, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.sampling_offsets.bias, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.attention_weights.weight, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.attention_weights.bias, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.value_proj.weight, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.value_proj.bias, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.output_proj.weight, bbox_head.pixel_decoder.encoder.layers.5.attentions.0.output_proj.bias, bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.0.0.weight, bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.0.0.bias, bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.1.weight, bbox_head.pixel_decoder.encoder.layers.5.ffns.0.layers.1.bias, bbox_head.pixel_decoder.encoder.layers.5.norms.0.weight, bbox_head.pixel_decoder.encoder.layers.5.norms.0.bias, bbox_head.pixel_decoder.encoder.layers.5.norms.1.weight, bbox_head.pixel_decoder.encoder.layers.5.norms.1.bias, bbox_head.pixel_decoder.level_encoding.weight, bbox_head.pixel_decoder.lateral_convs.0.conv.weight, bbox_head.pixel_decoder.lateral_convs.0.gn.weight, bbox_head.pixel_decoder.lateral_convs.0.gn.bias, bbox_head.pixel_decoder.output_convs.0.conv.weight, bbox_head.pixel_decoder.output_convs.0.gn.weight, bbox_head.pixel_decoder.output_convs.0.gn.bias, bbox_head.pixel_decoder.mask_feature.weight, bbox_head.pixel_decoder.mask_feature.bias, bbox_head.transformer_decoder.layers.0.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.0.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.0.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.0.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.0.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.0.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.0.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.0.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.0.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.0.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.0.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.0.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.0.norms.0.weight, bbox_head.transformer_decoder.layers.0.norms.0.bias, bbox_head.transformer_decoder.layers.0.norms.1.weight, bbox_head.transformer_decoder.layers.0.norms.1.bias, bbox_head.transformer_decoder.layers.0.norms.2.weight, bbox_head.transformer_decoder.layers.0.norms.2.bias, bbox_head.transformer_decoder.layers.1.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.1.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.1.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.1.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.1.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.1.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.1.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.1.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.1.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.1.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.1.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.1.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.1.norms.0.weight, bbox_head.transformer_decoder.layers.1.norms.0.bias, bbox_head.transformer_decoder.layers.1.norms.1.weight, bbox_head.transformer_decoder.layers.1.norms.1.bias, bbox_head.transformer_decoder.layers.1.norms.2.weight, bbox_head.transformer_decoder.layers.1.norms.2.bias, bbox_head.transformer_decoder.layers.2.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.2.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.2.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.2.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.2.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.2.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.2.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.2.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.2.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.2.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.2.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.2.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.2.norms.0.weight, bbox_head.transformer_decoder.layers.2.norms.0.bias, bbox_head.transformer_decoder.layers.2.norms.1.weight, bbox_head.transformer_decoder.layers.2.norms.1.bias, bbox_head.transformer_decoder.layers.2.norms.2.weight, bbox_head.transformer_decoder.layers.2.norms.2.bias, bbox_head.transformer_decoder.layers.3.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.3.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.3.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.3.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.3.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.3.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.3.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.3.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.3.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.3.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.3.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.3.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.3.norms.0.weight, bbox_head.transformer_decoder.layers.3.norms.0.bias, bbox_head.transformer_decoder.layers.3.norms.1.weight, bbox_head.transformer_decoder.layers.3.norms.1.bias, bbox_head.transformer_decoder.layers.3.norms.2.weight, bbox_head.transformer_decoder.layers.3.norms.2.bias, bbox_head.transformer_decoder.layers.4.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.4.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.4.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.4.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.4.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.4.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.4.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.4.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.4.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.4.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.4.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.4.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.4.norms.0.weight, bbox_head.transformer_decoder.layers.4.norms.0.bias, bbox_head.transformer_decoder.layers.4.norms.1.weight, bbox_head.transformer_decoder.layers.4.norms.1.bias, bbox_head.transformer_decoder.layers.4.norms.2.weight, bbox_head.transformer_decoder.layers.4.norms.2.bias, bbox_head.transformer_decoder.layers.5.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.5.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.5.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.5.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.5.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.5.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.5.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.5.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.5.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.5.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.5.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.5.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.5.norms.0.weight, bbox_head.transformer_decoder.layers.5.norms.0.bias, bbox_head.transformer_decoder.layers.5.norms.1.weight, bbox_head.transformer_decoder.layers.5.norms.1.bias, bbox_head.transformer_decoder.layers.5.norms.2.weight, bbox_head.transformer_decoder.layers.5.norms.2.bias, bbox_head.transformer_decoder.layers.6.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.6.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.6.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.6.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.6.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.6.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.6.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.6.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.6.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.6.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.6.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.6.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.6.norms.0.weight, bbox_head.transformer_decoder.layers.6.norms.0.bias, bbox_head.transformer_decoder.layers.6.norms.1.weight, bbox_head.transformer_decoder.layers.6.norms.1.bias, bbox_head.transformer_decoder.layers.6.norms.2.weight, bbox_head.transformer_decoder.layers.6.norms.2.bias, bbox_head.transformer_decoder.layers.7.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.7.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.7.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.7.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.7.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.7.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.7.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.7.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.7.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.7.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.7.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.7.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.7.norms.0.weight, bbox_head.transformer_decoder.layers.7.norms.0.bias, bbox_head.transformer_decoder.layers.7.norms.1.weight, bbox_head.transformer_decoder.layers.7.norms.1.bias, bbox_head.transformer_decoder.layers.7.norms.2.weight, bbox_head.transformer_decoder.layers.7.norms.2.bias, bbox_head.transformer_decoder.layers.8.attentions.0.attn.in_proj_weight, bbox_head.transformer_decoder.layers.8.attentions.0.attn.in_proj_bias, bbox_head.transformer_decoder.layers.8.attentions.0.attn.out_proj.weight, bbox_head.transformer_decoder.layers.8.attentions.0.attn.out_proj.bias, bbox_head.transformer_decoder.layers.8.attentions.1.attn.in_proj_weight, bbox_head.transformer_decoder.layers.8.attentions.1.attn.in_proj_bias, bbox_head.transformer_decoder.layers.8.attentions.1.attn.out_proj.weight, bbox_head.transformer_decoder.layers.8.attentions.1.attn.out_proj.bias, bbox_head.transformer_decoder.layers.8.ffns.0.layers.0.0.weight, bbox_head.transformer_decoder.layers.8.ffns.0.layers.0.0.bias, bbox_head.transformer_decoder.layers.8.ffns.0.layers.1.weight, bbox_head.transformer_decoder.layers.8.ffns.0.layers.1.bias, bbox_head.transformer_decoder.layers.8.norms.0.weight, bbox_head.transformer_decoder.layers.8.norms.0.bias, bbox_head.transformer_decoder.layers.8.norms.1.weight, bbox_head.transformer_decoder.layers.8.norms.1.bias, bbox_head.transformer_decoder.layers.8.norms.2.weight, bbox_head.transformer_decoder.layers.8.norms.2.bias, bbox_head.transformer_decoder.post_norm.weight, bbox_head.transformer_decoder.post_norm.bias, bbox_head.query_embed.weight, bbox_head.query_feat.weight, bbox_head.level_embed.weight, bbox_head.cls_embed.weight, bbox_head.cls_embed.bias, bbox_head.mask_embed.0.weight, bbox_head.mask_embed.0.bias, bbox_head.mask_embed.2.weight, bbox_head.mask_embed.2.bias, bbox_head.mask_embed.4.weight, bbox_head.mask_embed.4.bias, bbox_head.rel_cls_loss.cum_samples, bbox_head.sub_query_update.0.weight, bbox_head.sub_query_update.0.bias, bbox_head.sub_query_update.2.weight, bbox_head.sub_query_update.2.bias, bbox_head.sub_query_update.4.weight, bbox_head.sub_query_update.4.bias, bbox_head.obj_query_update.0.weight, bbox_head.obj_query_update.0.bias, bbox_head.obj_query_update.2.weight, bbox_head.obj_query_update.2.bias, bbox_head.obj_query_update.4.weight, bbox_head.obj_query_update.4.bias, bbox_head.rel_cls_embed.weight, bbox_head.rel_cls_embed.bias
+
+2025-09-02 17:09:34,880 - mmdet - INFO - Start running, host: stormai@stormai-3090x3, work_dir: /home/stormai/userfile2/yihj/Pair-Net-main/work_dirs/speaq1
+2025-09-02 17:09:34,881 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2025-09-02 17:09:34,881 - mmdet - INFO - workflow: [('train', 1), ('val', 1)], max: 15 epochs
+2025-09-02 17:09:34,881 - mmdet - INFO - Checkpoints will be saved to /home/stormai/userfile2/yihj/Pair-Net-main/work_dirs/speaq1 by HardDiskBackend.
+2025-09-02 17:09:56,164 - mmdet - INFO - Epoch [1][50/99]	lr: 1.000e-04, eta: 0:10:10, time: 0.426, data_time: 0.063, memory: 3187, loss_r_cls: 7.8028, loss_sub_cls: 20.8628, loss_obj_cls: 19.9990, loss_match: 6.9319, loss: 55.5964, grad_norm: 32.8632
+2025-09-02 17:10:12,046 - mmdet - INFO - Saving checkpoint at 1 epochs
+2025-09-02 17:10:33,758 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:10:33,758 - mmdet - INFO - Epoch(val) [1][99]	loss_r_cls: 7.1238, loss_sub_cls: 20.4463, loss_obj_cls: 20.0961, loss_match: 6.9286, loss: 54.5947
+2025-09-02 17:10:52,503 - mmdet - INFO - Epoch [2][50/99]	lr: 1.000e-04, eta: 0:05:58, time: 0.375, data_time: 0.061, memory: 3187, loss_r_cls: 5.9791, loss_sub_cls: 20.4456, loss_obj_cls: 19.9904, loss_match: 6.9245, loss: 53.3395, grad_norm: 22.3213
+2025-09-02 17:11:09,096 - mmdet - INFO - Saving checkpoint at 2 epochs
+2025-09-02 17:11:27,851 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:11:27,852 - mmdet - INFO - Epoch(val) [2][99]	loss_r_cls: 8.0473, loss_sub_cls: 20.4188, loss_obj_cls: 20.0449, loss_match: 6.9249, loss: 55.4359
+2025-09-02 17:11:46,676 - mmdet - INFO - Epoch [3][50/99]	lr: 1.000e-04, eta: 0:04:53, time: 0.376, data_time: 0.062, memory: 3187, loss_r_cls: 5.6221, loss_sub_cls: 21.1034, loss_obj_cls: 20.1129, loss_match: 6.9153, loss: 53.7537, grad_norm: 20.0609
+2025-09-02 17:12:04,112 - mmdet - INFO - Saving checkpoint at 3 epochs
+2025-09-02 17:12:23,077 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:12:23,077 - mmdet - INFO - Epoch(val) [3][99]	loss_r_cls: 7.7421, loss_sub_cls: 21.0021, loss_obj_cls: 20.2430, loss_match: 6.9204, loss: 55.9077
+2025-09-02 17:12:42,566 - mmdet - INFO - Epoch [4][50/99]	lr: 1.000e-04, eta: 0:04:16, time: 0.390, data_time: 0.067, memory: 3187, loss_r_cls: 5.6107, loss_sub_cls: 21.3763, loss_obj_cls: 20.1144, loss_match: 6.8751, loss: 53.9765, grad_norm: 21.3267
+2025-09-02 17:12:59,620 - mmdet - INFO - Saving checkpoint at 4 epochs
+2025-09-02 17:13:18,126 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:13:18,126 - mmdet - INFO - Epoch(val) [4][99]	loss_r_cls: 6.8552, loss_sub_cls: 20.1984, loss_obj_cls: 20.0722, loss_match: 6.9263, loss: 54.0522
+2025-09-02 17:13:37,072 - mmdet - INFO - Epoch [5][50/99]	lr: 1.000e-04, eta: 0:03:46, time: 0.379, data_time: 0.065, memory: 3187, loss_r_cls: 5.3997, loss_sub_cls: 20.9960, loss_obj_cls: 20.3837, loss_match: 6.9241, loss: 53.7034, grad_norm: 20.1333
+2025-09-02 17:13:53,050 - mmdet - INFO - Saving checkpoint at 5 epochs
+2025-09-02 17:14:11,561 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:14:11,562 - mmdet - INFO - Epoch(val) [5][99]	loss_r_cls: 7.0589, loss_sub_cls: 20.5750, loss_obj_cls: 20.1562, loss_match: 6.9282, loss: 54.7182
+2025-09-02 17:14:30,461 - mmdet - INFO - Epoch [6][50/99]	lr: 5.000e-05, eta: 0:03:20, time: 0.378, data_time: 0.064, memory: 3187, loss_r_cls: 5.0131, loss_sub_cls: 21.4242, loss_obj_cls: 19.9247, loss_match: 6.9238, loss: 53.2858, grad_norm: 19.6014
+2025-09-02 17:14:46,807 - mmdet - INFO - Saving checkpoint at 6 epochs
+2025-09-02 17:15:05,538 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:15:05,538 - mmdet - INFO - Epoch(val) [6][99]	loss_r_cls: 7.9529, loss_sub_cls: 20.9344, loss_obj_cls: 20.1377, loss_match: 6.9309, loss: 55.9560
+2025-09-02 17:15:24,435 - mmdet - INFO - Epoch [7][50/99]	lr: 5.000e-05, eta: 0:02:56, time: 0.378, data_time: 0.063, memory: 3187, loss_r_cls: 4.2561, loss_sub_cls: 21.0687, loss_obj_cls: 20.0967, loss_match: 6.9313, loss: 52.3528, grad_norm: 19.4364
+2025-09-02 17:15:40,644 - mmdet - INFO - Saving checkpoint at 7 epochs
+2025-09-02 17:15:59,174 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:15:59,175 - mmdet - INFO - Epoch(val) [7][99]	loss_r_cls: 6.7275, loss_sub_cls: 20.6021, loss_obj_cls: 20.1177, loss_match: 6.9560, loss: 54.4033
+2025-09-02 17:16:18,051 - mmdet - INFO - Epoch [8][50/99]	lr: 5.000e-05, eta: 0:02:33, time: 0.377, data_time: 0.062, memory: 3187, loss_r_cls: 3.8666, loss_sub_cls: 21.6772, loss_obj_cls: 19.9456, loss_match: 6.9007, loss: 52.3900, grad_norm: 22.7859
+2025-09-02 17:16:33,943 - mmdet - INFO - Saving checkpoint at 8 epochs
+2025-09-02 17:16:52,758 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:16:52,759 - mmdet - INFO - Epoch(val) [8][99]	loss_r_cls: 6.9478, loss_sub_cls: 20.8225, loss_obj_cls: 19.9904, loss_match: 6.9184, loss: 54.6792
+2025-09-02 17:17:12,236 - mmdet - INFO - Epoch [9][50/99]	lr: 5.000e-05, eta: 0:02:12, time: 0.389, data_time: 0.064, memory: 3187, loss_r_cls: 3.6938, loss_sub_cls: 21.4935, loss_obj_cls: 20.2788, loss_match: 6.8920, loss: 52.3580, grad_norm: 19.3771
+2025-09-02 17:17:28,702 - mmdet - INFO - Saving checkpoint at 9 epochs
+2025-09-02 17:17:46,971 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:17:46,971 - mmdet - INFO - Epoch(val) [9][99]	loss_r_cls: 7.7800, loss_sub_cls: 20.9806, loss_obj_cls: 20.0150, loss_match: 6.9301, loss: 55.7056
+2025-09-02 17:18:05,783 - mmdet - INFO - Epoch [10][50/99]	lr: 5.000e-05, eta: 0:01:51, time: 0.376, data_time: 0.062, memory: 3187, loss_r_cls: 3.7141, loss_sub_cls: 21.5423, loss_obj_cls: 20.2978, loss_match: 6.9216, loss: 52.4758, grad_norm: 19.4120
+2025-09-02 17:18:22,894 - mmdet - INFO - Saving checkpoint at 10 epochs
+2025-09-02 17:18:41,580 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:18:41,580 - mmdet - INFO - Epoch(val) [10][99]	loss_r_cls: 7.5055, loss_sub_cls: 20.9652, loss_obj_cls: 19.9569, loss_match: 6.9294, loss: 55.3570
+2025-09-02 17:19:00,486 - mmdet - INFO - Epoch [11][50/99]	lr: 2.500e-05, eta: 0:01:30, time: 0.378, data_time: 0.061, memory: 3187, loss_r_cls: 3.3157, loss_sub_cls: 21.8365, loss_obj_cls: 20.2231, loss_match: 6.9592, loss: 52.3344, grad_norm: 22.4994
+2025-09-02 17:19:16,863 - mmdet - INFO - Saving checkpoint at 11 epochs
+2025-09-02 17:19:36,198 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:19:36,198 - mmdet - INFO - Epoch(val) [11][99]	loss_r_cls: 7.4256, loss_sub_cls: 21.0625, loss_obj_cls: 20.2726, loss_match: 6.9210, loss: 55.6817
+2025-09-02 17:19:55,320 - mmdet - INFO - Epoch [12][50/99]	lr: 2.500e-05, eta: 0:01:09, time: 0.382, data_time: 0.064, memory: 3187, loss_r_cls: 3.5078, loss_sub_cls: 21.6630, loss_obj_cls: 20.3632, loss_match: 6.9225, loss: 52.4565, grad_norm: 24.2206
+2025-09-02 17:20:13,502 - mmdet - INFO - Saving checkpoint at 12 epochs
+2025-09-02 17:20:33,397 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:20:33,398 - mmdet - INFO - Epoch(val) [12][99]	loss_r_cls: 8.0997, loss_sub_cls: 21.2489, loss_obj_cls: 20.1821, loss_match: 6.9147, loss: 56.4454
+2025-09-02 17:20:52,665 - mmdet - INFO - Epoch [13][50/99]	lr: 2.500e-05, eta: 0:00:49, time: 0.385, data_time: 0.061, memory: 3187, loss_r_cls: 3.2694, loss_sub_cls: 22.1384, loss_obj_cls: 20.1883, loss_match: 6.9040, loss: 52.5001, grad_norm: 24.9192
+2025-09-02 17:21:09,259 - mmdet - INFO - Saving checkpoint at 13 epochs
+2025-09-02 17:21:27,885 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:21:27,886 - mmdet - INFO - Epoch(val) [13][99]	loss_r_cls: 8.5380, loss_sub_cls: 21.7296, loss_obj_cls: 20.1806, loss_match: 6.9254, loss: 57.3736
+2025-09-02 17:21:46,927 - mmdet - INFO - Epoch [14][50/99]	lr: 2.500e-05, eta: 0:00:29, time: 0.381, data_time: 0.062, memory: 3187, loss_r_cls: 2.9312, loss_sub_cls: 22.6317, loss_obj_cls: 20.3174, loss_match: 6.9209, loss: 52.8011, grad_norm: 27.3047
+2025-09-02 17:22:03,148 - mmdet - INFO - Saving checkpoint at 14 epochs
+2025-09-02 17:22:21,701 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:22:21,702 - mmdet - INFO - Epoch(val) [14][99]	loss_r_cls: 8.9959, loss_sub_cls: 21.5889, loss_obj_cls: 20.3306, loss_match: 6.9201, loss: 57.8355
+2025-09-02 17:22:40,578 - mmdet - INFO - Epoch [15][50/99]	lr: 2.500e-05, eta: 0:00:09, time: 0.377, data_time: 0.062, memory: 3187, loss_r_cls: 2.9523, loss_sub_cls: 22.0477, loss_obj_cls: 19.9654, loss_match: 6.9650, loss: 51.9304, grad_norm: 30.7422
+2025-09-02 17:22:57,346 - mmdet - INFO - Saving checkpoint at 15 epochs
+2025-09-02 17:23:16,033 - mmdet - INFO - Exp name: pairnet.py
+2025-09-02 17:23:16,033 - mmdet - INFO - Epoch(val) [15][99]	loss_r_cls: 8.9472, loss_sub_cls: 21.3856, loss_obj_cls: 20.1837, loss_match: 6.9548, loss: 57.4713
